@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VividSaver - Free Online Social Media Video & Photo Downloader</title>
+  <meta name="description" content="Download high-quality videos and photos from Facebook, Instagram, TikTok, Twitter/X, and YouTube for free without watermark." />
+  <meta name="keywords" content="video downloader, instagram photo downloader, tiktok downloader no watermark, facebook video saver, twitter downloader" />
+  
+  <!-- Google Search Console Verification Meta Tag Placeholder -->
+  <meta name="google-site-verification" content="YOUR_SEARCH_CONSOLE_VERIFICATION_CODE" />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Schema.org JSON-LD for Google SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "VividSaver",
+    "url": "https://vivid-media-downloader.vercel.app",
+    "description": "Free online tool to download videos and photos from major social media platforms.",
+    "applicationCategory": "MultimediaApplication",
+    "operatingSystem": "All"
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="navbar">
+    <div class="container nav-content">
+      <div class="logo">
+        <i class="fa-solid fa-circle-down"></i>
+        <span>Vivid<span class="logo-accent">Saver</span></span>
+      </div>
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How to Use</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="container hero">
+    <h1 class="main-title">All-in-One Video & Photo Downloader</h1>
+    <p class="subtitle">Download videos, reels, photos, and carousels from Facebook, Instagram, TikTok, Twitter/X, and YouTube instantly for free.</p>
+
+    <!-- Search Input Box -->
+    <div class="search-wrapper">
+      <div class="input-box">
+        <i class="fa-solid fa-link link-icon"></i>
+        <input type="text" id="urlInput" placeholder="Paste social media video or photo link here..." autocomplete="off" />
+        <button id="searchBtn" aria-label="Search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Professional Loader -->
+    <div id="loader" class="loader-container hidden">
+      <div class="pink-spinner"></div>
+      <p class="loading-text">Analyzing link and fetching media...</p>
+    </div>
+
+    <!-- Error Message Display -->
+    <div id="errorMessage" class="error-box hidden"></div>
+
+    <!-- Result Display Container (Inline Below Input) -->
+    <div id="resultContainer" class="result-container hidden"></div>
+  </main>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="container section-padding">
+    <h2 class="section-title">How to Download Media</h2>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h3>Copy Link</h3>
+        <p>Copy the video or photo link from your favorite social media app or browser.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h3>Paste & Analyze</h3>
+        <p>Paste the URL into the search bar above and click the round search button.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h3>Download File</h3>
+        <p>Select your preferred quality or photo item and click Download to save.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section for Google SEO -->
+  <section id="faq" class="container section-padding">
+    <h2 class="section-title">Frequently Asked Questions</h2>
+    <div class="faq-accordion">
+      <details class="faq-item">
+        <summary>Is VividSaver completely free to use?</summary>
+        <p>Yes, VividSaver is 100% free with no hidden charges, subscriptions, or account registration required.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Can I download multiple photos from an Instagram post?</summary>
+        <p>Absolutely! If a link contains multiple photos or videos (carousel), our system extracts each item separately with its own download button.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Are TikTok videos downloaded without watermarks?</summary>
+        <p>Yes, all TikTok videos processed through VividSaver are extracted in high quality without any watermark.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Where are downloaded files saved on my device?</summary>
+        <p>Files are saved directly to your default browser downloads folder or Gallery depending on your phone or PC settings.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <p>&copy; 2026 VividSaver. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#privacy" onclick="alert('Privacy Policy: VividSaver does not store any user logs or media files on its servers.')">Privacy Policy</a>
+        <a href="#terms" onclick="alert('Terms of Service: This utility tool is strictly for personal use.')">Terms of Service</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+  </html>
