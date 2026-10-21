@@ -1,96 +1,118 @@
-const RENDER_BACKEND_URL = "https://vivid-media-downloader.onrender.com"; // Your Render Backend URL
-const SMART_LINK_URL = ""; // Monetag / Adsterra SmartLink URL
+const express = require('express');
+const cors = require('cors');
+const axios = require('axios');
 
-const urlInput = document.getElementById("urlInput");
-const searchBtn = document.getElementById("searchBtn");
-const loader = document.getElementById("loader");
-const errorMessage = document.getElementById("errorMessage");
-const resultContainer = document.getElementById("resultContainer");
+const app = express();
+app.use(cors());
+app.use(express.json());
 
-searchBtn.addEventListener("click", processMedia);
-urlInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") processMedia();
-});
+const PORT = process.env.PORT || 3000;
 
-async function processMedia() {
-  const targetUrl = urlInput.value.trim();
+// Render এর Environment Variables থেকে ইউজারনেম ও পাসওয়ার্ড নেওয়া
+const IG_USERNAME = process.env.INSTAGRAM_USERNAME || 'mariyakhan01721';
+const IG_PASSWORD = process.env.INSTAGRAM_PASSWORD || 'mariya4545';
 
-  if (!targetUrl) {
-    showError("Please paste a valid social media video or photo link.");
-    return;
-  }
+let sessionCookie = '';
 
-  hideError();
-  resultContainer.classList.add("hidden");
-  resultContainer.innerHTML = "";
-  loader.classList.remove("hidden");
+// অটোমেটিক ইনস্টাগ্রাম ব্যাকগ্রাউন্ড লগইন ফাংশন
+async function loginInstagram() {
+    try {
+        const loginUrl = 'https://www.instagram.com/api/v1/web/accounts/login/ajax/';
+        const timestamp = Math.floor(Date.now() / 1000);
+        
+        const response = await axios({
+            method: 'post',
+            url: loginUrl,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Referer': 'https://www.instagram.com/accounts/login/',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            data: new URLSearchParams({
+                enc_password: `#PWD_INSTAGRAM_BROWSER:0:${timestamp}:${IG_PASSWORD}`,
+                username: IG_USERNAME,
+                queryParams: '{}',
+                optIntoOneTap: 'false'
+            }).toString()
+        });
 
-  try {
-    const response = await fetch(`${RENDER_BACKEND_URL}/api/download?url=${encodeURIComponent(targetUrl)}`);
-    const data = await response.json();
+        const cookies = response.headers['set-cookie'];
+        if (cookies) {
+            sessionCookie = cookies.join('; ');
+            console.log('Instagram Auto-Login Successful!');
+            return sessionCookie;
+        }
+    } catch (error) {
+        console.error('Auto-login attempt failed:', error.message);
+    }
+    return '';
+}
 
-    loader.classList.add("hidden");
-
-    if (!data.success) {
-      showError(data.message || "Failed to process video. Make sure link is public.");
-      return;
+// ডাউনলোড এপিআই এন্ডপয়েন্ট
+app.get('/api/download', async (req, res) => {
+    const videoUrl = req.query.url;
+    if (!videoUrl) {
+        return res.status(400).json({ error: 'Please provide a valid URL' });
     }
 
-    renderResults(data);
-  } catch (err) {
-    loader.classList.add("hidden");
-    showError("Backend server is starting up or network error. Please wait 15 seconds and try again.");
-  }
-}
+    try {
+        const match = videoUrl.match(/(?:reel|p|tv)\/([A-Za-z0-9_-]+)/);
+        if (!match) {
+            return res.status(400).json({ error: 'Invalid Instagram URL' });
+        }
+        const shortcode = match[1];
 
-function renderResults(data) {
-  resultContainer.classList.remove("hidden");
+        if (!sessionCookie) {
+            await loginInstagram();
+        }
 
-  if (data.type === "single") {
-    resultContainer.innerHTML = `
-      <div class="media-card">
-        ${data.thumb ? `<img src="${data.thumb}" alt="Media Preview" class="media-preview-img" />` : ""}
-        <h3 class="media-title">${data.title || "Social Media Media"}</h3>
-        
-        <div class="quality-selection">
-          <label for="qualitySelect">Available Quality Option:</label>
-          <select id="qualitySelect" class="quality-select">
-            ${data.picker.map(item => `<option value="${item.url}">${item.label}</option>`).join("")}
-          </select>
-        </div>
+        const embedUrl = `https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`;
+        const headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': '*/*'
+        };
+        if (sessionCookie) {
+            headers['Cookie'] = sessionCookie;
+        }
 
-        <button class="btn-download" onclick="triggerDownloadFromPicker()">
-          <i class="fa-solid fa-download"></i> Download Video
-        </button>
-      </div>
-    `;
-  }
-}
+        const response = await axios.get(embedUrl, { headers });
+        const item = response.data?.items?.[0];
 
-function triggerDownloadFromPicker() {
-  const selectedUrl = document.getElementById("qualitySelect").value;
-  executeDownload(selectedUrl);
-}
+        if (item) {
+            const videoData = item.video_versions ? item.video_versions[0].url : null;
+            const photoData = item.image_versions2 ? item.image_versions2.candidates[0].url : null;
 
-function executeDownload(fileUrl) {
-  if (SMART_LINK_URL && SMART_LINK_URL !== "") {
-    window.open(SMART_LINK_URL, "_blank");
-  }
+            return res.json({
+                status: 'success',
+                type: videoData ? 'video' : 'image',
+                downloadUrl: videoData || photoData,
+                title: item.caption?.text || 'Instagram Media'
+            });
+        }
 
-  const tempAnchor = document.createElement("a");
-  tempAnchor.href = fileUrl;
-  tempAnchor.target = "_blank";
-  tempAnchor.download = "downloaded-media";
-  document.body.appendChild(tempAnchor);
-  tempAnchor.click();
-  document.body.removeChild(tempAnchor);
-}
+        // বিকল্প মেথড (GraphQL)
+        const graphqlUrl = `https://www.instagram.com/graphql/query/?query_hash=b30121327ec24ef799f9367dba337211&variables=${encodeURIComponent(JSON.stringify({ shortcode }))}`;
+        const gqlResponse = await axios.get(graphqlUrl, { headers });
+        const media = gqlResponse.data?.data?.shortcode_media;
 
-function showError(msg) {
-  errorMessage.innerText = msg;
-  errorMessage.classList.remove("hidden");
-}
+        if (media) {
+            return res.json({
+                status: 'success',
+                type: media.is_video ? 'video' : 'image',
+                downloadUrl: media.video_url || media.display_url,
+                title: media.edge_media_to_caption?.edges[0]?.node?.text || 'Instagram Media'
+            });
+        }
 
-function hideError() {
-  errorMessage.classList.add("hidden");
-}
+        throw new Error('Media details not found');
+
+    } catch (err) {
+        console.error('Download processing error:', err.message);
+        res.status(500).json({ error: 'Failed to fetch video. Please check the link or try again.' });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
